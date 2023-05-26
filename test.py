@@ -1,4 +1,6 @@
+import numpy as np
 import torch
+import torch.nn as nn
 
 from torch.utils.data import DataLoader, SubsetRandomSampler, SequentialSampler
 from torchvision import datasets, transforms
@@ -19,12 +21,12 @@ if __name__ == "__main__":
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     print('Running on device: {}'.format(device))
 
-    mtcnn = MTCNN(
-        image_size=160,
-        margin=14,
-        device=device,
-        selection_method='center_weighted_size'
-    )
+    # mtcnn = MTCNN(
+    #     image_size=160,
+    #     margin=14,
+    #     device=device,
+    #     selection_method='center_weighted_size'
+    # )
 
     # Define the data loader for the input set of images
     orig_img_ds = datasets.ImageFolder(data_dir, transform=None)
@@ -74,10 +76,11 @@ if __name__ == "__main__":
 
     # Load pretrained resnet model
     resnet = InceptionResnetV1(
-        classify=False,
+        classify=True,
         pretrained='vggface2'
     ).to(device)
 
+    softmax = nn.Softmax(dim=1)
     classes = []
     embeddings = []
     resnet.eval()
@@ -85,7 +88,17 @@ if __name__ == "__main__":
         for xb, yb in embed_loader:
             xb = xb.to(device)
             b_embeddings = resnet(xb)
+            # -----------------------------------------------
+            softmax_result = softmax(b_embeddings)
+            softmax_result = softmax_result.to('cpu').numpy()
+
+            print(np.sum(softmax_result, axis=1))
+
+
             b_embeddings = b_embeddings.to('cpu').numpy()
+            # print(b_embeddings.shape)
+            # print(b_embeddings)
+            break
             classes.extend(yb.numpy())
             embeddings.extend(b_embeddings)
 
@@ -93,13 +106,13 @@ if __name__ == "__main__":
     embeddings_dict = dict(zip(crop_paths, embeddings))
 
     pairs = read_pairs(pairs_path)
-    print(pairs)
-    path_list, issame_list = get_paths(data_dir + '_cropped', pairs)
-    embeddings = np.array([embeddings_dict[path] for path in path_list])
-
-    # print(embeddings)
-    # print(issame_list)
-
-    tpr, fpr, accuracy, val, val_std, far, fp, fn = evaluate(embeddings, issame_list)
-
-    print(np.mean(accuracy))
+    # print(pairs)
+    # path_list, issame_list = get_paths(data_dir + '_cropped', pairs)
+    # embeddings = np.array([embeddings_dict[path] for path in path_list])
+    #
+    # # print(embeddings)
+    # # print(issame_list)
+    #
+    # tpr, fpr, accuracy, val, val_std, far, fp, fn = evaluate(embeddings, issame_list)
+    #
+    # print(np.mean(accuracy))
