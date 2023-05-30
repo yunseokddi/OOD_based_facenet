@@ -51,6 +51,9 @@ class Detector(object):
 
         self.resnet.eval()
 
+        print("Num of ID dataset : {}".format(len(in_dataset)))
+        print("Num of OOD dataset : {}".format(len(out_dataset)))
+
     def detect(self):
         print("Processing in-distribution images")
         self.detect_in_distribution()
@@ -75,7 +78,7 @@ class Detector(object):
 
                 curr_batch_size = inputs.shape[0]
 
-                scores = get_msp_score(inputs, self.resnet)
+                scores = self.get_score(inputs)
 
                 for score in scores:
                     f1.write("{}\n".format(score))
@@ -97,6 +100,7 @@ class Detector(object):
 
                 tq_id_test.set_postfix(errors)
                 t0 = time.time()
+
 
     def detect_out_distribution(self):
         f2 = open(os.path.join(self.save_dir, "{}_out_scores.txt".format(self.method)), 'w')
@@ -128,7 +132,7 @@ class Detector(object):
             tq_out_test.set_postfix(errors)
             t0 = time.time()
 
-    def get_score(self, inputs, T=0.1):
+    def get_score(self, inputs, T=0.001):
         if self.method == "msp":
             scores = get_msp_score(inputs, self.resnet)
 

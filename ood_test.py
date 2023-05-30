@@ -6,7 +6,7 @@ from detector.detector import Detector
 
 parser = argparse.ArgumentParser(description="OOD Based Face Detector")
 
-parser.add_argument('--in-data-dir', default='/home/dorosee/yunseok/data/VGGface_2/', type=str)
+parser.add_argument('--in-data-dir', default='/home/dorosee/yunseok/data/VGGface_2_small_version/', type=str)
 parser.add_argument('--out-data-dir', default='/home/dorosee/yunseok/data/Korean_face/OOD_test/', type=str)
 parser.add_argument('--batch-size', default=256, type=int)
 parser.add_argument('--method', default='odin', type=str)
